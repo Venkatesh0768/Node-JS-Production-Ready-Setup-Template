@@ -2,21 +2,26 @@
   "name": "production-setup",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon src/index.ts",
-    "start": "npm run build && node dist/index.js",
+    "dev": "nodemon src/server.ts",
+    "start": "npm run build && node dist/server.js",
     "test": "echo \"No tests specified\" && exit 0",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "lint-staged": {
+    "*.ts": [
+      "npm run lint:fix"
+    ]
+  },
   "type": "commonjs",
   "devDependencies": {
-    "@commitlint/cli": "^21.2.1",
-    "@commitlint/config-conventional": "^21.2.0",
     "@types/node": "^20.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
