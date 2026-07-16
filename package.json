@@ -17,16 +17,21 @@
   "license": "ISC",
   "lint-staged": {
     "*.ts": [
-      "npm run lint:fix"
+      "eslint --fix"
     ]
   },
   "type": "commonjs",
   "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20.14.0",
+    "eslint": "^10.7.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.64.0"
   }
 }
