@@ -19,6 +19,7 @@ export default tseslint.config(
             },
         },
         rules: {
+            //@eslint-disable-next-line
             'no-console': 'error',
             quotes: ['error', 'single', { allowTemplateLiterals: true }],
         },
