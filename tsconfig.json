@@ -42,5 +42,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
+  "include": ["src/**/*", "prisma.config.ts", "vitest.config.ts", "test/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

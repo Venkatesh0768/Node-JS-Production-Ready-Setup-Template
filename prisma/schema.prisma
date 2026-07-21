@@ -1,0 +1,168 @@
+// Flyanytrip — Prisma Schema
+// Database: Supabase (PostgreSQL)
+// ORM: Prisma 6
+// Generator outputs TypeScript client to src/generated/prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  CANCELLATION_PENDING
+  REFUND_PENDING
+  ISSUED
+  EXPIRED
+  PARTIAL_CANCELLATION
+}
+
+enum PaxType {
+  ADULT
+  CHILD
+  INFANT
+}
+
+enum TripType {
+  ONE_WAY
+  ROUND_TRIP
+}
+
+enum CabinClass {
+  ECONOMY
+  PREMIUM_ECONOMY
+  BUSINESS
+  FIRST
+}
+
+// ── Models ────────────────────────────────────────────────────────────────────
+
+/// Stores every completed booking (LCC ticket or Non-LCC hold)
+model Booking {
+  id               Int            @id @default(autoincrement())
+  bookingId        Int            @unique                    // Adivaha BookingId
+  pnr              String         @unique                    // Airline PNR
+  orderId          String         @unique                    // Adivaha order_id (required for cancellation)
+  traceId          String                                    // Search session TraceId
+  resultIndex      String                                    // Selected flight ResultIndex
+  isLcc            Boolean                                   // LCC or Non-LCC path
+  isDomestic       Boolean
+
+  // Route
+  fromIata         String         @db.VarChar(3)
+  toIata           String         @db.VarChar(3)
+  departureDate    DateTime
+  returnDate       DateTime?
+  tripType         TripType       @default(ONE_WAY)
+  cabinClass       CabinClass     @default(ECONOMY)
+  airlineCode      String         @db.VarChar(4)
+
+  // Fare snapshot (from FareQuote at time of booking)
+  currency         String         @default("INR") @db.VarChar(5)
+  baseFare         Decimal        @db.Decimal(12, 2)
+  tax              Decimal        @db.Decimal(12, 2)
+  yqTax            Decimal        @db.Decimal(12, 2)
+  otherCharges     Decimal        @db.Decimal(12, 2)
+  publishedFare    Decimal        @db.Decimal(12, 2)
+  offeredFare      Decimal        @db.Decimal(12, 2)
+  discount         Decimal        @default(0) @db.Decimal(12, 2)
+
+  // Status
+  status           BookingStatus  @default(CONFIRMED)
+  ticketStatus     Int            @default(1)               // Adivaha TicketStatus code
+
+  // Relations
+  passengers       Passenger[]
+  cancellations    CancellationRequest[]
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([pnr])
+  @@index([bookingId])
+  @@index([orderId])
+  @@map("bookings")
+}
+
+/// Individual passenger on a booking
+model Passenger {
+  id               Int       @id @default(autoincrement())
+  bookingId        Int
+  booking          Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  title            String    @db.VarChar(10)
+  firstName        String
+  lastName         String
+  paxType          PaxType   @default(ADULT)
+  gender           Int       // 1 = Male, 2 = Female
+  dateOfBirth      DateTime
+  nationality      String    @db.VarChar(5)
+  countryCode      String    @db.VarChar(5)
+  contactNo        String
+  email            String
+
+  // Passport (international flights)
+  passportNo       String?
+  passportExpiry   DateTime?
+
+  // Adivaha ticket reference
+  ticketId         Int?      // Passenger.Ticket.TicketId from Adivaha
+  ticketNumber     String?
+  ticketStatus     String?
+
+  isLeadPax        Boolean   @default(false)
+
+  createdAt        DateTime  @default(now())
+
+  @@index([bookingId])
+  @@map("passengers")
+}
+
+/// Tracks cancellation requests and their Adivaha ChangeRequestId
+model CancellationRequest {
+  id                Int       @id @default(autoincrement())
+  bookingId         Int
+  booking           Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  changeRequestId   Int?      @unique  // Returned by Adivaha ticketCancel
+  requestType       Int                // 1 = Full, 2 = Partial
+  cancellationType  Int                // 1 = Full, 2 = Partial
+  remarks           String?
+  endUserIp         String?
+
+  // Status from checkChangeStatus
+  changeStatus      Int?               // 0=Pending,1=Confirmed,2=Failed,3=Processing
+  refundAmount      Decimal?  @db.Decimal(12, 2)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([bookingId])
+  @@index([changeRequestId])
+  @@map("cancellation_requests")
+}
+
+/// Audit log — records every inbound API call to the Flyanytrip backend
+model ApiLog {
+  id           Int      @id @default(autoincrement())
+  method       String   @db.VarChar(10)
+  path         String
+  statusCode   Int
+  requestBody  Json?
+  responseBody Json?
+  durationMs   Int?
+  ipAddress    String?
+
+  createdAt    DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@map("api_logs")
+}

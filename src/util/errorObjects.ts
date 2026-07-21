@@ -3,8 +3,8 @@ import { EApplicationEnvironment } from '../constant/application';
 import responseMessage from '../constant/responseMessage'
 import { THttpError } from '../types/types';
 import { Request } from 'express';
+import logger from './logger';
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export default (err : Error | unknown , req: Request , errorStatusCode: number  = 500) => {
     
     const errorObj: THttpError = {
@@ -19,8 +19,7 @@ export default (err : Error | unknown , req: Request , errorStatusCode: number  
         data: null,
         trace: err instanceof Error ? {error: err.stack} : null
     }
-    // eslint-disable-next-line no-console
-    console.error(`ERROR_OBJECT` , { meta: errorObj});
+    logger.error(`ERROR_OBJECT` , { meta: errorObj});
 
     if(config.ENV === EApplicationEnvironment.PRODUCTION){
         delete errorObj.trace;

@@ -1,7 +1,9 @@
 {
-    "ext": ".ts",
-    "ignore": [
-        "node_modules",
-        "dist"
-    ]
+    "watch": ["src"],
+    "ext": "ts,json",
+    "ignore": ["node_modules", "dist", "src/generated"],
+    "exec": "ts-node src/server.ts",
+    "env": {
+        "ENV": "development"
+    }
 }

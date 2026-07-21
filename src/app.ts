@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
 import path from 'path';
 import router from './router/apiRouter';
-import gobalErrorHandler from './middlerware/gobalErrorHandler';
+import gobalErrorHandler from './middleware/gobalErrorHandler';
 import responseMessage from './constant/responseMessage';
 import httpError from './util/httpError';
 
@@ -20,7 +20,7 @@ app.use((req : Request , _: Response , next: NextFunction) => {
     try{
         throw new Error(responseMessage.NOT_FOUND('route'));
 
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+     
     }catch(error: Error | unknown ){
         httpError(next , error , req , 404)
     }

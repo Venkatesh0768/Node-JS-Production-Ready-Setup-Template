@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
+ 
 import { NextFunction, Request } from 'express';
 import errorObject from './errorObjects';
 
